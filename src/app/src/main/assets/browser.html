@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Browser</title>
+</head>
+<body>
+<!--========== STYLES ==========-->
+<style>
+        :root{ --primary-color: #0266C8; --secondary-color: #F5F5F5; }
+        * { font-size: .9rem; box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif }
+        select, input, button { font-size: 1.2rem; color: #000; }
+        #container { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        #navigate-btn-browser { padding: 2px 40px; cursor: pointer; }
+        #url-browser, #protocol-select-browser { padding: 6px 8px; }
+        #navigate-btn-controls { text-align: center;margin-top: 1rem; }
+        #spinner-containner { display: none; height: 100%; width: 100%; background-color: rgba(255, 255, 255, .7); position: absolute;top:0; align-items: center; justify-content: center; }
+        #spinner { display: inline-block; width: 50px; height: 50px; border: 6px solid var(--secondary-color); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; -webkit-animation: spin 1s ease-in-out infinite; }
+        .bg-secondary { background-color: var(--secondary-color); color: #333; }
+        .bg-primary { background-color: var(--primary-color); color: #FFF; }
+        .border-0 { border: none; outline: none; border-radius: 0px; }
+        .fw500 { font-weight: 500; }
+        @keyframes spin { to { -webkit-transform: rotate(360deg); } }
+        @-webkit-keyframes spin { to { -webkit-transform: rotate(360deg); } }
+    </style>
+
+<!--========== CONTENT ==========-->
+<div id="container">
+    <div id="input-group-browser">
+        <div id="input-control-browser">
+            <select name="select" id="protocol-select-browser" class="bg-secondary border-0 fw500">
+                <option value="https://">https://</option>
+                <option value="http://">http://</option>
+            </select>
+            <input type="text" id="url-browser" value="" placeholder="Introduzca una URL" class="bg-secondary border-0 fw500">
+        </div>
+        <div id="navigate-btn-controls">
+            <button id="navigate-btn-browser" class="bg-primary border-0 fw500">Ir</button>
+        </div>
+    </div>
+</div>
+<div id="spinner-containner">
+    <div id="spinner"></div>
+</div>
+<!--========== SCRIPTS ==========-->
+<script>
+        document.addEventListener("DOMContentLoaded", event => {
+            function browserHandler(protocolId, urlId, btnId){
+                const prot = document.getElementById(protocolId);
+                const url = document.getElementById(urlId);
+                const btn = document.getElementById(btnId);
+
+                if(btn) btn.addEventListener('click', e => {
+                    if(!url.value && !url.value.trim()){
+                        alert("Debe escribir una URL para continuar.");
+                        url.focus();
+                        return;
+                    }
+
+                    let location = prot.value.trim() + url.value.trim();
+                    document.getElementById("spinner-containner").style.display="flex";
+                    window.location.href = location;
+                });
+            }
+
+            browserHandler("protocol-select-browser", "url-browser", "navigate-btn-browser");
+        });
+    </script>
+</body>
+</html>
