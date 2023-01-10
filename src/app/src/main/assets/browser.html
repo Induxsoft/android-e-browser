@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,18 +9,22 @@
 <body>
 <!--========== STYLES ==========-->
 <style>
-        :root{ --primary-color: #0266C8; --secondary-color: #F5F5F5; }
-        * { font-size: .9rem; box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif }
-        select, input, button { font-size: 1.2rem; color: #000; }
-        #container { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
-        #navigate-btn-browser { padding: 2px 40px; cursor: pointer; }
-        #url-browser, #protocol-select-browser { padding: 6px 8px; }
-        #navigate-btn-controls { text-align: center;margin-top: 1rem; }
+        :root{ --primary-color: #CC0000; --secondary-color: #F5F4F8; --medium-gray:#888; }
+        * { font-size: .8rem; box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif }
+        select, input, button { font-size: 1.2rem; color: #000;border-radius: 5px; background-color: transparent;}
+        #container { background-color: #FFF; width: 100vw; height: 100vh; display: flex; align-items: flex-start; justify-content: center; }
+        #input-control-browser { display: flex; align-items: center; gap: 4px; border-radius: 5px; padding: 4px;}
+        #navigate-btn-browser { cursor: pointer; padding: 4px 8px; margin: 2px; background-color: #FFF; }
+        #url-browser, #protocol-select-browser { padding: 4px 0; }
+        #url-browser { width: 100%; }
         #spinner-containner { display: none; height: 100%; width: 100%; background-color: rgba(255, 255, 255, .7); position: absolute;top:0; align-items: center; justify-content: center; }
         #spinner { display: inline-block; width: 50px; height: 50px; border: 6px solid var(--secondary-color); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; -webkit-animation: spin 1s ease-in-out infinite; }
+        #logo-container { display: flex; width: 100%; align-items: center; justify-content: center; flex-wrap: wrap; line-height: 2rem; margin-top: 2rem;}
+        #savedURLContainer { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2rem; }
+        .savedURL{ aspect-ratio: 1 / 1; min-width: 20%; max-width: 30%; border: 1px solid #CCC; background-color: #F5F5F5; border-radius: 5px; }
         .bg-secondary { background-color: var(--secondary-color); color: #333; }
         .bg-primary { background-color: var(--primary-color); color: #FFF; }
-        .border-0 { border: none; outline: none; border-radius: 0px; }
+        .border-0 { border: none; outline: none; }
         .fw500 { font-weight: 500; }
         @keyframes spin { to { -webkit-transform: rotate(360deg); } }
         @-webkit-keyframes spin { to { -webkit-transform: rotate(360deg); } }
@@ -28,16 +32,34 @@
 
 <!--========== CONTENT ==========-->
 <div id="container">
-    <div id="input-group-browser">
-        <div id="input-control-browser">
-            <select name="select" id="protocol-select-browser" class="bg-secondary border-0 fw500">
+    <div style="display: flex; flex-direction: column; height: 100%;">
+        <div id="logo-container">
+            <img src="data:image/x-icon;base64,AAABAAIAEBAAAAEAIABoBAAAJgAAACAgAAABACAAKBEAAI4EAAAoAAAAEAAAACAAAAABACAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAADM/wAAzP8AAMz/AADM/wAAzP8PD8//IyPT/y0t1f8wMNb/KSnU/xsb0f8DA83/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wcHzf98fOT/zMz1/+Pj+f/s7Pv/8PD8/+jo+v/a2vf/qKjt/yoq1P8AAMz/AADM/wAAzP8AAMz/AADM/ycn1P/NzfX////////////////////////////////////////////s7Pv/TEzb/wAAzP8AAMz/AADM/xAQz//S0vb//////////////////////////////////////////////////////+3t+/8vL9X/AADM/wICzP+UlOr/////////////////+Pj9/5SU6f8oKNT/GhrR/3R04//t7fv/////////////////rq7u/wQEzf8bG9H/2tr4/////////////////52d6/8DA83/AADM/wAAzP8AAMz/Li7V/0ND2f9DQ9n/Q0PZ/zc31/8EBM3/MTHW//Dw/P////////////////9QUNz/BwfN/wcHzf8HB83/BwfN/wcHzf8HB83/BwfN/wcHzf8GBs3/AQHM/z4+2P/9/f7/////////////////1tb3/8bG8//GxvP/xsbz/8bG8//GxvP/xsbz/8bG8//GxvP/uLjx/yQk0/8+Ptj//f3//////////////////////////////////////////////////////////////////+np+v8pKdT/Ly/V/+7u+//////////////////m5vr/09P2/9PT9v/T0/b/09P2/9vb9//8/P7////////////g4Pn/ISHT/xkZ0f/Y2Pf/////////////////lJTp/wAAzP8AAMz/AADM/wAAzP9ERNn/9/f9////////////wsLz/wkJzv8CAsz/kZHp//////////////////Pz/f9hYd//AwPM/wAAzP8lJdP/0dH2/////////////////2Rk4P8AAMz/AADM/w8Pz//T0/b//////////////////v7//9nZ9//IyPT/+Pj+/////////////v7//7e38P8BAcz/AADM/wAAzP8AAMz/KCjU/8/P9f///////////////////////////////////////////8DA8v8cHNH/AADM/wAAzP8AAMz/AADM/wAAzP8ICM7/fX3l/8rK9P/h4fn/5ub6/+bm+v/g4Pn/x8f0/3Fx4v8DA83/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8NDc7/IiLT/ycn1P8nJ9T/ISHS/wsLzv8AAMz/AADM/wAAzP8AAMz/AADM/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoAAAAIAAAAEAAAAABACAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8HB83/IiLT/0ZG2v9dXd7/Z2fg/2Ji4P9JSdv/JibU/wcHzf8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/BATN/y0t1f9gYN//xsb0/////////////////////////////////////////////Pz+/7i48f9YWN7/ICDS/wEBzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/x4e0v+3t/D/7e37//////////////////////////////////////////////////////////////////7+///f3/n/kJDp/wsLzv8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wMDzf9aWt7/7u78////////////////////////////////////////////////////////////////////////////////////////////x8f0/ygo1P8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8DA83/jo7o//j4/v//////////////////////////////////////////////////////////////////////////////////////////////////////3d34/yoq1f8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/2Zm4P/6+v7/////////////////////////////////////////////////////////////////////////////////////////////////////////////////1NT3/w4Oz/8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP9BQdn/9PT9////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////nJzr/wEBzP8AAMz/AADM/wAAzP8AAMz/Dw/P/87O9f////////////////////////////////////////////f3/f/IyPT/cnLj/y8v1v8hIdP/OjrY/52d6//m5vr////////////////////////////////////////////k5Pn/JSXT/wAAzP8AAMz/AADM/wAAzP9HR9r/+vr+////////////////////////////////////////////XFze/wkJzv8AAMz/AADM/wAAzP8AAMz/AQHM/ygo1P/KyvT///////////////////////////////////////////9lZeD/AADM/wAAzP8AAMz/AADM/7Oz8P///////////////////////////////////////v7//39/5f8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/ykp1P+5ufH/wsLz/8LC8//CwvP/wsLz/8LC8//CwvP/wsLz/52d6/8AAMz/AADM/wAAzP8QEM///f3////////////////////////////////////////m5vr/JyfU/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wICzP8CAsz/AgLM/wICzP8CAsz/AgLM/wICzP8CAsz/AgLM/wAAzP8AAMz/AADM/0hI2v///////////////////////////////////////////8rK9P8LC87/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/hobn////////////////////////////////////////////wsLz/wMDzf8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP+srO7////////////////////////////////////////////d3fj/bW3i/2pq4f9qauH/amrh/2pq4f9qauH/amrh/2pq4f9qauH/amrh/2pq4f9qauH/amrh/2pq4f9qauH/amrh/2pq4f9qauH/amrh/yQk0/8AAMz/AADM/7+/8v//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VVXd/wAAzP8AAMz/v7/y//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////9DQ9n/AADM/wAAzP+zs/D//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////zEx1v8AAMz/AADM/3x85f//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////ExPQ/wAAzP8AAMz/OjrX////////////////////////////////////////////9PT9/7Ky7/+mpu3/pqbt/6am7f+mpu3/pqbt/6am7f+mpu3/pqbt/6am7f/Dw/P///////////////////////////////////////f3/f8BAcz/AADM/wAAzP8KCs7/+vr+///////////////////////////////////////k5Pr/JSXT/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/2dn4f//////////////////////////////////////mprr/wAAzP8AAMz/AADM/wAAzP+kpO3///////////////////////////////////////39//9XV93/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8JCc7/wsLz//////////////////////////////////////9KStv/AADM/wAAzP8AAMz/AADM/0FB2f/5+f7//////////////////////////////////////+vr+/8lJdT/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/11d3//5+f7/////////////////////////////////2dn3/xoa0f8AAMz/AADM/wAAzP8AAMz/DAzO/8zM9f///////////////////////////////////////////93d+P9LS9v/AQHM/wAAzP8AAMz/AADM/wgIzf+Cgub/8PD8//////////////////////////////////////+Cgub/AQHM/wAAzP8AAMz/AADM/wAAzP8AAMz/OzvY//T0/f/////////////////////////////////////////////////l5fr/lJTq/35+5f+fn+z/8fH8////////////////////////////////////////////1NT3/wUFzf8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/Zmbg//v7/v///////////////////////////////////////////////////////////////////////////////////////////////////////////+np+v81Ndb/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8EBM3/jo7o//v7/v/////////////////////////////////////////////////////////////////////////////////////////////////s7Pv/X1/f/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8DA83/X1/f/+/v/P//////////////////////////////////////////////////////////////////////////////////////4uL5/0BA2f8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/IiLT/7i48f/s7Pv/////////////////////////////////////////////////////////////////4+P5/5+f7P8MDM7/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/BQXN/y0t1f9dXd//t7fx//7+///////////////////////////////////9/f7/qqru/1VV3f8kJNP/AwPM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AwPM/xMT0P8nJ9T/NDTW/zEx1v8kJNP/EhLQ/wICzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAzP8AAMz/AADM/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+                 alt="Enterprise Browser"
+                 width="10%"
+            >
+            <small style="color: var(--medium-gray); width: 100%; text-align: center;">Enterprise Browser</small>
+        </div>
+        <div id="input-control-browser" class="bg-secondary">
+            <select name="select" id="protocol-select-browser" class="border-0 fw500" style="color: var(--primary-color);">
                 <option value="https://">https://</option>
                 <option value="http://">http://</option>
             </select>
-            <input type="text" id="url-browser" value="" placeholder="Introduzca una URL" class="bg-secondary border-0 fw500">
+            <input type="search" id="url-browser" value="" placeholder="Introduzca una URL" class="border-0 fw500">
+            <button id="navigate-btn-browser" class="border-0 fw500" style="color: var(--primary-color); display: flex; align-items: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                </svg>
+            </button>
         </div>
-        <div id="navigate-btn-controls">
-            <button id="navigate-btn-browser" class="bg-primary border-0 fw500">Ir</button>
+
+        <!--<div id="savedURLContainer">
+            <div class="savedURL">
+
+            </div>
+        </div>-->
+        <div style="width: 90vw; text-align: center; flex-grow: 1;display: flex; align-items:flex-end; justify-content: center;">
+            <img src="https://esemanal.mx/revista/wp-content/uploads/2010/11/Portada-web-Induxsoft-logo-.jpg" width="50%" alt="">
         </div>
     </div>
 </div>
@@ -48,21 +70,26 @@
 <script>
         document.addEventListener("DOMContentLoaded", event => {
             function browserHandler(protocolId, urlId, btnId){
-                const prot = document.getElementById(protocolId);
-                const url = document.getElementById(urlId);
                 const btn = document.getElementById(btnId);
+                const inpt = document.getElementById(urlId);
+                const prot = document.getElementById(protocolId);
 
                 if(btn) btn.addEventListener('click', e => {
-                    if(!url.value && !url.value.trim()){
-                        alert("Debe escribir una URL para continuar.");
-                        url.focus();
-                        return;
-                    }
-
-                    let location = prot.value.trim() + url.value.trim();
-                    document.getElementById("spinner-containner").style.display="flex";
-                    window.location.href = location;
+                    navigateURL(inpt, prot);
                 });
+                if(inpt)inpt.addEventListener("search", e => {
+                    navigateURL(inpt, prot);
+                });
+            }
+
+            function navigateURL(url, prot){
+                if(!url.value && !url.value.trim()){
+                    url.focus();
+                    return;
+                }
+                let location = prot.value.trim() + url.value.trim();
+                document.getElementById("spinner-containner").style.display="flex";
+                window.location.href = location;
             }
 
             browserHandler("protocol-select-browser", "url-browser", "navigate-btn-browser");
