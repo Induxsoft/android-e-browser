@@ -6,9 +6,13 @@ function createDriver_imin(){
         connect:function(device,success,fail)
         {
             this.connection = new IminPrinter();
-            this.connection.connect().then(async (isConnect) => {
-                if(isConnect){
+            this.connection.connect().then(async (isConnect) => 
+            {
+                console.log(isConnect);
+                if(isConnect)
+                {
                     let status = await this.connection.getPrinterStatus();
+                    console.log(status)
                     this.isConnected = isConnect;
                     this.connection.initPrinter();
                     if(success)
@@ -40,12 +44,13 @@ function createDriver_imin(){
             //size=0-Normal, 1-2x, 2-3x  ->mm
             if(this.isConnected){ this.connection.setTextSize(size); }
         },
-        printText:function(txt)
+        printText:function(txt,cut=false)
         {
             //txt=Cadena de texto a imprimir
-            if(this.isConnected && txt){
-                this.connection.printText(txt + '\n');
-                this.connection.printAndFeedPaper(50);
+            if(this.isConnected && txt)
+			{
+                this.connection.printText(txt);//si requiere salto de linea al texto agreguele  '\n'
+                if(cut)this.connection.printAndFeedPaper(50);
             }
         },
         printBarcode:function(std,data)

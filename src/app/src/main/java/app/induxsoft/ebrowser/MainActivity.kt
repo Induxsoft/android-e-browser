@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
 
         val wb : WebView = findViewById(R.id.myWebView)
         wb.loadUrl("file:///android_asset/browser.html")
+
         wb.addJavascriptInterface(dsEscPrn(this), "dsEscPrn")
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
@@ -56,16 +57,48 @@ class MainActivity : AppCompatActivity() {
         }
 
         wb.settings.javaScriptEnabled = true
+        wb.settings.domStorageEnabled=true
+        wb.settings.allowContentAccess=true
+        wb.settings.allowFileAccess=true
+
+        wb.settings.allowFileAccessFromFileURLs=false
+        wb.settings.allowUniversalAccessFromFileURLs=false
+        wb.settings.blockNetworkImage=false
+        wb.settings.blockNetworkLoads=false
+        wb.settings.databaseEnabled=true
+        wb.settings.defaultTextEncodingName="UTF-8"
+        wb.settings.displayZoomControls=true
+        wb.settings.javaScriptCanOpenWindowsAutomatically=false
+        wb.settings.lightTouchEnabled=false
+        wb.settings.loadsImagesAutomatically=true
+        wb.settings.mediaPlaybackRequiresUserGesture=true
+        wb.settings.saveFormData=false
+        wb.settings.savePassword=false
+        wb.settings.useWideViewPort=true
+        wb.settings.setSupportMultipleWindows(false)
+        wb.settings.setSupportZoom(true)
+
+        wb.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        wb.settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
         // Evitar el redirecionamiento a una pestaña del navegador dentro de webview
-        wb.webViewClient=(object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-                return false
+        wb.webViewClient=(object : WebViewClient()
+        {
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                view?.loadUrl(request?.url.toString())
+                return true
+            }
+
+            @Deprecated("Deprecated in Java")
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                view?.loadUrl(url ?: "")
+                return true
             }
         })
 
         // Poder abrir el file selector nativo de android dentro de webview
-        wb.webChromeClient=(object : WebChromeClient(){
+        wb.webChromeClient=(object : WebChromeClient()
+        {
             override fun onShowFileChooser(
                 webView: WebView,
                 filePathCallback: ValueCallback<Array<Uri>>,
@@ -73,6 +106,12 @@ class MainActivity : AppCompatActivity() {
             ): Boolean {
                 uploadMessageAboveL = filePathCallback
                 openImageChooserActivity()
+                return true
+            }
+
+            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean
+            {
+                //Log.d("WebView", consoleMessage?.message() ?: "")
                 return true
             }
         })
