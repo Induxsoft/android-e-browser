@@ -22,6 +22,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.dantsu.escposprinter.EscPosCharsetEncoding
 import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.dantsu.escposprinter.connection.tcp.TcpConnection
@@ -117,7 +118,7 @@ class MainActivity : AppCompatActivity() {
         })
         if (Build.VERSION.SDK_INT > 9) {
             val gfgPolicy = ThreadPolicy.Builder().permitAll().build()
-            StrictMode.setThreadPolicy(gfgPolicy)
+            //StrictMode.setThreadPolicy(gfgPolicy)
         }
     }
     private fun openImageChooserActivity() {
@@ -185,20 +186,44 @@ class dsEscPrn(private val mContext: Context){
     var usbReady = false
     val usbDevice = null
 
+    private var charsetEncoding: String ="windows-1252"
+    private var charsetId: Int=16
     //========== CONEXIONES
     @JavascriptInterface
+    public fun setCharsetEncoding(charsetencoding: String)
+    {
+        charsetEncoding=charsetencoding
+    }
+    @JavascriptInterface
+    public fun setCharsetId(_charsetid:Int)
+    {
+        charsetId=_charsetid
+    }
+    @JavascriptInterface
     public fun openPrinterTCP(address: String, port: Int, timeout: Int, prnDpi:Int, prnWidth:Float, prnCharPerLine:Int){
-        (mContext as Activity).runOnUiThread{
-            printer?.disconnectPrinter()
-            Thread {
-                try {
-                    printer = EscPosPrinter(TcpConnection(address, port, timeout), prnDpi, prnWidth, prnCharPerLine)
+        Thread {
+            try {
+                printer?.disconnectPrinter()
+
+                printer = EscPosPrinter(
+                    TcpConnection(address, port, timeout),
+                    prnDpi,
+                    prnWidth,
+                    prnCharPerLine,
+                    EscPosCharsetEncoding(charsetEncoding, charsetId)
+                )
+
+                (mContext as Activity).runOnUiThread {
+                    Toast.makeText(mContext, "Conectado correctamente", Toast.LENGTH_SHORT).show()
                 }
-                catch (e: Exception) {
-                    e.printStackTrace()
+
+            } catch (e: Exception) {
+                (mContext as Activity).runOnUiThread {
+                    Toast.makeText(mContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
-            }.start()
-        }
+                e.printStackTrace()
+            }
+        }.start()
     }
 
     @JavascriptInterface
@@ -254,30 +279,63 @@ class dsEscPrn(private val mContext: Context){
     //========== FUNCIONES
     @JavascriptInterface
     public fun printFormattedText(text: String){
-        (mContext as Activity).runOnUiThread {
-            printer?.printFormattedText(text)
+        if (printer == null) {
+            (mContext as Activity).runOnUiThread {
+                Toast.makeText(mContext, "Impresora no conectada", Toast.LENGTH_SHORT).show()
+            }
+            return
         }
+        Thread {
+            try {
+                printer?.printFormattedText(text)
+                (mContext as Activity).runOnUiThread {
+                    Toast.makeText(mContext, "Impresión enviada", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                (mContext as Activity).runOnUiThread {
+                    Toast.makeText(mContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+                e.printStackTrace()
+            }
+        }.start()
     }
 
     @JavascriptInterface
     public fun printFormattedTextAndCut(text: String){
-        (mContext as Activity).runOnUiThread {
-            printer?.printFormattedTextAndCut(text)
+        if (printer == null) {
+            (mContext as Activity).runOnUiThread {
+                Toast.makeText(mContext, "Impresora no conectada", Toast.LENGTH_SHORT).show()
+            }
+            return
         }
+        Thread {
+            try {
+                printer?.printFormattedTextAndCut(text)
+            } catch (e: Exception) {
+                (mContext as Activity).runOnUiThread {
+                    Toast.makeText(mContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+                e.printStackTrace()
+            }
+        }.start()
     }
 
     @JavascriptInterface
     public fun printFormattedTextAndOpenCashBox(text: String, feedPaper: Float){
-        (mContext as Activity).runOnUiThread {
-            Thread {
-                try {
-                    printer?.printFormattedTextAndOpenCashBox(text, feedPaper)
-                }
-                catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }.start()
+        if (printer == null) {
+            Toast.makeText(mContext, "Impresora no conectada", Toast.LENGTH_SHORT).show()
+            return
         }
+        Thread {
+            try {
+                printer?.printFormattedTextAndOpenCashBox(text, feedPaper)
+            } catch (e: Exception) {
+                (mContext as Activity).runOnUiThread {
+                    Toast.makeText(mContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+                e.printStackTrace()
+            }
+        }.start()
     }
 
     private val usbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
