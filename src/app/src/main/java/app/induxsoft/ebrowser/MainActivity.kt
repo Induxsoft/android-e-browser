@@ -9,6 +9,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.net.Uri
@@ -24,10 +26,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.dantsu.escposprinter.EscPosCharsetEncoding
 import com.dantsu.escposprinter.EscPosPrinter
+import com.dantsu.escposprinter.EscPosPrinterSize
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.dantsu.escposprinter.connection.tcp.TcpConnection
 import com.dantsu.escposprinter.connection.usb.UsbConnection
 import com.dantsu.escposprinter.connection.usb.UsbPrintersConnections
+import com.dantsu.escposprinter.textparser.PrinterTextParserImg
 
 
 class MainActivity : AppCompatActivity() {
@@ -45,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         val wb : WebView = findViewById(R.id.myWebView)
         wb.loadUrl("file:///android_asset/browser.html")
 
-        wb.addJavascriptInterface(dsEscPrn(this), "dsEscPrn")
+        wb.addJavascriptInterface(dsEscPrn(this,wb), "dsEscPrn")
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH), PERMISSION_BLUETOOTH);
@@ -179,9 +183,10 @@ class MainActivity : AppCompatActivity() {
 
 }
 
-class dsEscPrn(private val mContext: Context){
+class dsEscPrn(private val mContext: Context,private val webView: WebView){
 
     var printer : com.dantsu.escposprinter.EscPosPrinter? = null
+
     private val ACTION_USB_PERMISSION = "app.induxsoft.ebrowser.USB_PERMISSION"
     var usbReady = false
     val usbDevice = null
@@ -288,9 +293,6 @@ class dsEscPrn(private val mContext: Context){
         Thread {
             try {
                 printer?.printFormattedText(text)
-                (mContext as Activity).runOnUiThread {
-                    Toast.makeText(mContext, "Impresión enviada", Toast.LENGTH_SHORT).show()
-                }
             } catch (e: Exception) {
                 (mContext as Activity).runOnUiThread {
                     Toast.makeText(mContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
@@ -337,7 +339,110 @@ class dsEscPrn(private val mContext: Context){
             }
         }.start()
     }
+    fun getBitmapFromBase64(base64: String): Bitmap {
+        try {
+            // 🔹 limpiar posibles prefijos
+            val cleanBase64 = base64
+                .substringAfter("base64,", base64)
+                .replace("\n", "")
+                .replace("\r", "")
 
+            // 🔹 decodificar (usar NO_WRAP 👈 clave)
+            val decodedBytes = android.util.Base64.decode(cleanBase64, android.util.Base64.NO_WRAP)
+
+            val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+
+            return bitmap ?: throw Exception("BitmapFactory devolvió null")
+
+        } catch (e: Exception) {
+            throw Exception("Error al decodificar base64: ${e.message}")
+        }
+    }
+    fun getBitmapFromUrl(url: String): Bitmap {
+        val connection = java.net.URL(url).openConnection()
+        connection.connectTimeout = 5000
+        connection.readTimeout = 5000
+        connection.doInput = true
+        connection.connect()
+
+        val input = connection.getInputStream()
+        val bitmap = BitmapFactory.decodeStream(input)
+
+        input.close()
+
+        return bitmap ?: throw Exception("No se pudo decodificar la imagen")
+    }
+    @JavascriptInterface
+    public fun printImage(base64OrUrl: String,callbackName: String,maxWidth: Int = 384,height: Int = 0)
+    {
+        if (printer == null) {
+            Toast.makeText(mContext, "Impresora no conectada", Toast.LENGTH_SHORT).show()
+            return
+        }
+        Thread {
+            try
+            {
+                // 🔹 1. Obtener bitmap
+                val bitmap: Bitmap = if (base64OrUrl.startsWith("http")) {
+                    getBitmapFromUrl(base64OrUrl)
+                } else {
+                    getBitmapFromBase64(base64OrUrl)
+                }
+
+                if (bitmap.width == 0 || bitmap.height == 0) {
+                    throw Exception("Imagen inválida")
+                }
+
+                // 🔹 2. Calcular alto
+                val finalHeight = if (height <= 0) {
+                    (bitmap.height * maxWidth) / bitmap.width
+                } else {
+                    height
+                }
+
+                // 🔹 3. Redimensionar
+                val resized = Bitmap.createScaledBitmap(
+                    bitmap,
+                    maxWidth,
+                    finalHeight,
+                    true
+                )
+
+
+                if (resized.width == 0 || resized.height == 0) {
+                    throw Exception("Bitmap inválido")
+                }
+                // 🔹 4. Convertir a HEX
+                val hex = PrinterTextParserImg.bitmapToHexadecimalString(printer, resized)
+
+                // 🔹 5. Ejecutar callback en UI thread
+                (mContext as Activity).runOnUiThread{
+                    Toast.makeText(mContext, " invocar funcion", Toast.LENGTH_LONG).show()
+                    val safeHex = hex.replace("'", "\\'")
+                    webView.evaluateJavascript("""
+                        if (typeof $callbackName === 'function') {
+                            $callbackName('$safeHex');
+                        } else {
+                            console.error('Callback no existe: $callbackName');
+                        }
+                    """.trimIndent(), null)
+
+                    Toast.makeText(mContext, " paso funcion", Toast.LENGTH_LONG).show()
+                }
+
+                // 🔹 opcional: liberar memoria
+                if (resized != bitmap) {
+                    bitmap.recycle()
+                }
+
+            } catch (e: Exception) {
+                (mContext as Activity).runOnUiThread {
+                    Toast.makeText(mContext, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+                e.printStackTrace()
+            }
+        }.start()
+    }
     private val usbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action
