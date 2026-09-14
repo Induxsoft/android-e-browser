@@ -195,6 +195,11 @@ class dsEscPrn(private val mContext: Context,private val webView: WebView){
     private var charsetId: Int=16
     //========== CONEXIONES
     @JavascriptInterface
+    public fun disconnectPrinter()
+    {
+        printer?.disconnectPrinter()
+    }
+    @JavascriptInterface
     public fun setCharsetEncoding(charsetencoding: String)
     {
         charsetEncoding=charsetencoding
